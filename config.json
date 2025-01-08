@@ -1,0 +1,65 @@
+{
+  "name": "Reports With Record Sums",
+  "namespace": "Vanderbilt\\ReportsWithRecordSums",
+  "description": "Create data report tables with the ability to sum fields across all instances, and simple math functions to compare columns.",
+  "authors": [
+    {
+      "name": "Ryan Moore",
+      "email": "testuser@localhost.com",
+      "institution": "Vanderbilt University Medical Center"
+    }
+  ],
+  "framework-version": 16,
+  "links": {
+    "project": [
+      {
+        "name": "Data Reports Page",
+        "icon": "fas fa-databases-arrow",
+        "url": "interfaces/data_report.php",
+        "show-header-and-footer": true
+      }
+    ]
+  },
+  "system-settings": [
+  ],
+  "project-settings": [
+    {
+      "key": "table-settings",
+      "name": "Settings for Each Data Report",
+      "type": "sub_settings",
+      "repeatable": true,
+      "sub_settings": [
+        {
+          "key": "report-name",
+          "name": "Name of Report",
+          "type": "text"
+        },
+        {
+          "key": "column-settings",
+          "name": "Repeatable Header and Column Values",
+          "type": "sub_settings",
+          "repeatable": true,
+          "sub_settings": [
+            {
+              "key": "header-value",
+              "name": "Plain Text to Display at Header of the Column",
+              "type": "text"
+            },
+            {
+              "key": "column-value",
+              "name": "Data Value for Column (accepts basic REDCap field piping)",
+              "type": "text"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "log-file": "log.txt",
+  "compatibility": {
+    "php-version-min": "8.2.0",
+    "php-version-max": "",
+    "redcap-version-min": "14.0.0",
+    "redcap-version-max": ""
+  }
+}
