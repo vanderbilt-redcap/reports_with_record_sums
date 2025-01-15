@@ -68,18 +68,20 @@ class ReportsWithRecordSums extends AbstractExternalModule
 		$getColumnRefs = function ($index) use ($columns) {
 			$returnArray = ['results' => $columns[$index], 'errors' => []];
 			$matches = [];
+			$colNum = $index + 1;
 
 			do {
 				preg_match_all('/:col_(\d+):/', $returnArray['results'], $matches);
+
 				if (!empty($matches[1])) {
-					foreach ($matches[1] as $match) {
-						if ($match == $index) {
+					foreach ($matches[1] as $mIndex => $match) {
+						if ((int)$match == (int)$colNum) {
 							$returnArray['errors'][] = "Column $index references itself.";
 						} elseif (!isset($columns[$match])) {
 							$returnArray['errors'][] = "Column $index references another column that doesn't exist.";
 						}
 						else {
-							$returnArray['results'] = str_replace(":col_$match:",$columns[$match],$returnArray['results']);
+							$returnArray['results'] = str_replace(":col_$match:",$columns[$mIndex],$returnArray['results']);
 						}
 					}
 				}
@@ -154,6 +156,7 @@ class ReportsWithRecordSums extends AbstractExternalModule
 
 		array_walk($columns, function(&$val,$key) use ($record_id,$recordData) {
 			$val = \Piping::replaceVariablesInLabel($val,$record_id,null,1,[$record_id => $recordData],true,null,false);
+			$val = $this->evaluate_math_string($val);
 		});
 
 		return $columns;
