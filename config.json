@@ -58,8 +58,6 @@
   "log-file": "log.txt",
   "compatibility": {
     "php-version-min": "8.2.0",
-    "php-version-max": "",
-    "redcap-version-min": "14.0.0",
-    "redcap-version-max": ""
+    "php-version-max": ""
   }
 }
