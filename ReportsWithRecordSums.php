@@ -15,10 +15,6 @@ class ReportsWithRecordSums extends AbstractExternalModule
 {
 	private mixed $reportSettings;
 
-	function redcap_data_entry_form($project_id, $record, $instrument, $event_id, $group_id, $repeat_instance = 1)
-	{
-	}
-
 	function buildReportTable($project_id,$report_index) {
 		if (!is_numeric($report_index)) return [];
 
