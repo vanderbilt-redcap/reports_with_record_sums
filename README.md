@@ -23,3 +23,13 @@ These settings can be repeated together to define multiple reports.
           * Take the value from column 1 and subtract 3. Then, add the total of column 1 multiplied by 4 to that result. This should match basic order of operations in arithmetic.
         * :instance_sum[record_count]:
           * Column will add the values from all instances and events for the 'record_count' field.
+
+## Preview
+
+Expected appearance of the "Data Reports Page" for the included [example project xml](examples/report_with_record_sums_example.xml):
+
+![Example report page](images/report_example.png)
+
+Settings used:
+
+![Example settings](images/settings_example.png)
