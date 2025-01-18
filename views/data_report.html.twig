@@ -4,11 +4,13 @@
     {% if report_data %}
         <h2>{{ report_data.name }}</h2>
         <table class="sum_report_table">
-            <thead><tr>
-            {% for index,header in report_data.headers %}
-                <th>{{ header }}</th>
-            {% endfor %}
-            </tr></thead>
+            <thead>
+            <tr>
+                {% for index,header in report_data.headers %}
+                    <th>{{ header }}</th>
+                {% endfor %}
+            </tr>
+            </thead>
             <tbody>
             {% for index,row in report_data.rows %}
                 <tr>

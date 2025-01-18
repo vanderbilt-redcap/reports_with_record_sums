@@ -8,9 +8,9 @@
     {% if report_list %}
         <form method="post" action="{{ getUrl('interfaces/data_report.php') }}">
             <select name="report_index">
-            {% for index,name in report_list %}
-                <option value="{{ index }}">{{ name }}</option>
-            {% endfor %}
+                {% for index,name in report_list %}
+                    <option value="{{ index }}">{{ name }}</option>
+                {% endfor %}
             </select>
             <input type="submit" value="Submit"/>
         </form>

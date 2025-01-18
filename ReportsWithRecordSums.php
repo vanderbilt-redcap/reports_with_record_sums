@@ -15,24 +15,26 @@ class ReportsWithRecordSums extends AbstractExternalModule
 {
 	private mixed $reportSettings;
 
-	function buildReportTable($project_id,$report_index) {
-		if (!is_numeric($report_index)) return [];
+	public function buildReportTable($project_id, $report_index) {
+		if (!is_numeric($report_index)) {
+			return [];
+		}
 
-		$tableSettings = $this->getReportSettings($project_id,$report_index);
-		$returnArray = ['name'=>$tableSettings[REPORT_NAME],'headers'=>$tableSettings[HEADER_VALUE]];
+		$tableSettings = $this->getReportSettings($project_id, $report_index);
+		$returnArray = ['name' => $tableSettings[REPORT_NAME], 'headers' => $tableSettings[HEADER_VALUE]];
 		$tableData = \REDCap::getData([
 			'project_id' => $this->getProjectId(),
 			'return_format' => 'array',
 		]);
 
 		foreach ($tableData as $record => $rowData) {
-			$returnArray['rows'][$record] = $this->processRecordColumns($record, $rowData,$tableSettings[COL_VALUE]);
+			$returnArray['rows'][$record] = $this->processRecordColumns($record, $rowData, $tableSettings[COL_VALUE]);
 		}
 
 		return $returnArray;
 	}
 
-	function getReportSettings($project_id,$report_index) : array {
+	public function getReportSettings($project_id, $report_index): array {
 		if (!isset($this->reportSettings[$report_index])) {
 			$this->loadAllReportSettings($project_id);
 		}
@@ -40,7 +42,7 @@ class ReportsWithRecordSums extends AbstractExternalModule
 		return $this->reportSettings[$report_index] ?? [];
 	}
 
-	function loadAllReportSettings($project_id) : void {
+	public function loadAllReportSettings($project_id): void {
 		$reports = $this->getProjectSetting(REPORT_NAME, $project_id);
 		$columns = $this->getProjectSetting(COL_VALUE, $project_id);
 		$headers = $this->getProjectSetting(HEADER_VALUE, $project_id);
@@ -54,12 +56,11 @@ class ReportsWithRecordSums extends AbstractExternalModule
 		}
 	}
 
-	function getAllReportNames($project_id) {
+	public function getAllReportNames($project_id) {
 		return $this->getProjectSetting(REPORT_NAME, $project_id);
 	}
 
-	function replaceColumnReferences(array $columns) : array
-	{
+	public function replaceColumnReferences(array $columns): array {
 		$errors = $colMatches = [];
 		$getColumnRefs = function ($index) use ($columns) {
 			$returnArray = ['results' => $columns[$index], 'errors' => []];
@@ -75,9 +76,8 @@ class ReportsWithRecordSums extends AbstractExternalModule
 							$returnArray['errors'][] = "Column $index references itself.";
 						} elseif (!isset($columns[$match])) {
 							$returnArray['errors'][] = "Column $index references another column that doesn't exist.";
-						}
-						else {
-							$returnArray['results'] = str_replace(":col_$match:",$columns[$mIndex],$returnArray['results']);
+						} else {
+							$returnArray['results'] = str_replace(":col_$match:", $columns[$mIndex], $returnArray['results']);
 						}
 					}
 				}
@@ -90,17 +90,16 @@ class ReportsWithRecordSums extends AbstractExternalModule
 			$colMatches[$index] = $getColumnRefs($index);
 			if (!empty($colMatches[$index]['errors'])) {
 				$errors[] = $colMatches[$index]['errors'];
-			}
-			elseif (!empty($colMatches[$index]['results'])) {
+			} elseif (!empty($colMatches[$index]['results'])) {
 				$columns[$index] = $colMatches[$index]['results'];
 			}
 		}
 
-		return [$columns,$errors];
+		return [$columns, $errors];
 	}
 
-	function replaceSpecialTags($recordData,$columns) {
-		$addCount = function($data) {
+	public function replaceSpecialTags($recordData, $columns) {
+		$addCount = function ($data) {
 			if (is_numeric($data)) {
 				return $data;
 			}
@@ -109,7 +108,9 @@ class ReportsWithRecordSums extends AbstractExternalModule
 
 		foreach ($columns as $cIndex => $column) {
 			preg_match_all('/:(.*)\[(.*)\]:/', $column, $matches);
-			if (empty($matches[1]) || empty($matches[2])) continue;
+			if (empty($matches[1]) || empty($matches[2])) {
+				continue;
+			}
 
 			foreach ($matches[1] as $mIndex => $match) {
 				$fieldName = $matches[2][$mIndex];
@@ -131,7 +132,7 @@ class ReportsWithRecordSums extends AbstractExternalModule
 							}
 						}
 
-						$columns[$cIndex] = str_replace(":".$match."[".$fieldName."]:",$currentCount,$column);
+						$columns[$cIndex] = str_replace(":" . $match . "[" . $fieldName . "]:", $currentCount, $column);
 						break;
 					default:
 						break;
@@ -141,17 +142,17 @@ class ReportsWithRecordSums extends AbstractExternalModule
 		return $columns;
 	}
 
-	function processRecordColumns($record_id, array $recordData, array $columns) : array {
-		list($columns,$errors) = $this->replaceColumnReferences($columns);
+	public function processRecordColumns($record_id, array $recordData, array $columns): array {
+		list($columns, $errors) = $this->replaceColumnReferences($columns);
 
-		$columns = $this->replaceSpecialTags($recordData,$columns);
+		$columns = $this->replaceSpecialTags($recordData, $columns);
 		/*$columns = array_map(function ($column) use ($recordData) {
 			$record_id = array_key_first($recordData);
 			\Piping::replaceVariablesInLabel($column,$record_id,null,1,$recordData);
 		},$columns);*/
 
-		array_walk($columns, function(&$val,$key) use ($record_id,$recordData) {
-			$val = \Piping::replaceVariablesInLabel($val,$record_id,null,1,[$record_id => $recordData],true,null,false);
+		array_walk($columns, function (&$val, $key) use ($record_id, $recordData) {
+			$val = \Piping::replaceVariablesInLabel($val, $record_id, null, 1, [$record_id => $recordData], true, null, false);
 			$val = $this->evaluate_math_string($val);
 		});
 
@@ -160,21 +161,21 @@ class ReportsWithRecordSums extends AbstractExternalModule
 
 	// Code originates from: https://github.com/samirkumardas/evaluate_math_string with the warning that it does not check for valid syntax
 	// Modified slightly to not run this function on any string with letters in it
-	function evaluate_math_string($str) {
-		$__eval = function ($str) use(&$__eval){
+	public function evaluate_math_string($str) {
+		$__eval = function ($str) use (&$__eval) {
 			$error = false;
 			$div_mul = false;
 			$add_sub = false;
 			$result = 0;
 			// If this has letters we're not considering it basic math and ignore it
-			if(preg_match("/[a-z]/i", $str)){
+			if (preg_match("/[a-z]/i", $str)) {
 				return $str;
 			}
-			$str = preg_replace('/[^\d.+\-*\/()]/i','',$str);
-			$str = rtrim(trim($str, '/*+'),'-');
+			$str = preg_replace('/[^\d.+\-*\/()]/i', '', $str);
+			$str = rtrim(trim($str, '/*+'), '-');
 
 			/* lets first tackle parentheses */
-			if ((strpos($str, '(') !== false &&  strpos($str, ')') !== false)) {
+			if ((strpos($str, '(') !== false && strpos($str, ')') !== false)) {
 				$regex = '/\(([\d.+\-*\/]+)\)/';
 				preg_match($regex, $str, $matches);
 				if (isset($matches[1])) {
@@ -183,24 +184,30 @@ class ReportsWithRecordSums extends AbstractExternalModule
 			}
 
 			/* Remove unwanted parentheses */
-			$str = str_replace(array('(',')'), '', $str);
+			$str = str_replace(['(', ')'], '', $str);
 			/* now division and multiplication */
-			if ((strpos($str, '/') !== false ||  strpos($str, '*') !== false)) {
+			if ((strpos($str, '/') !== false || strpos($str, '*') !== false)) {
 				$div_mul = true;
-				$operators = array('*','/');
-				while(!$error && $operators) {
+				$operators = ['*', '/'];
+				while (!$error && $operators) {
 					$operator = array_pop($operators);
-					while($operator && strpos($str, $operator) !== false) {
+					while ($operator && strpos($str, $operator) !== false) {
 						if ($error) {
 							break;
 						}
-						$regex = '/([\d.]+)\\'.$operator.'(\-?[\d.]+)/';
+						$regex = '/([\d.]+)\\' . $operator . '(\-?[\d.]+)/';
 						preg_match($regex, $str, $matches);
 						if (isset($matches[1]) && isset($matches[2])) {
-							if ($operator=='+') $result = (float)$matches[1] + (float)$matches[2];
-							if ($operator=='-') $result = (float)$matches[1] - (float)$matches[2];
-							if ($operator=='*') $result = (float)$matches[1] * (float)$matches[2];
-							if ($operator=='/') {
+							if ($operator == '+') {
+								$result = (float)$matches[1] + (float)$matches[2];
+							}
+							if ($operator == '-') {
+								$result = (float)$matches[1] - (float)$matches[2];
+							}
+							if ($operator == '*') {
+								$result = (float)$matches[1] * (float)$matches[2];
+							}
+							if ($operator == '/') {
 								if ((float)$matches[2]) {
 									$result = (float)$matches[1] / (float)$matches[2];
 								} else {
@@ -208,7 +215,7 @@ class ReportsWithRecordSums extends AbstractExternalModule
 								}
 							}
 							$str = preg_replace($regex, $result, $str, 1);
-							$str = str_replace(array('++','--','-+','+-'), array('+','+','-','-'), $str);
+							$str = str_replace(['++', '--', '-+', '+-'], ['+', '+', '-', '-'], $str);
 						} else {
 							$error = true;
 						}
@@ -216,7 +223,7 @@ class ReportsWithRecordSums extends AbstractExternalModule
 				}
 			}
 
-			if (!$error && (strpos($str, '+') !== false ||  strpos($str, '-') !== false)) {
+			if (!$error && (strpos($str, '+') !== false || strpos($str, '-') !== false)) {
 				//tackle duble negation
 				$str = str_replace('--', '+', $str);
 				$add_sub = true;
@@ -226,7 +233,7 @@ class ReportsWithRecordSums extends AbstractExternalModule
 					$operator = '+';
 					$tokens = $matches[0];
 					$count = count($tokens);
-					for ($i=0; $i < $count; $i++) {
+					for ($i = 0; $i < $count; $i++) {
 						if ($tokens[$i] == '+' || $tokens[$i] == '-') {
 							$operator = $tokens[$i];
 						} else {
@@ -243,9 +250,9 @@ class ReportsWithRecordSums extends AbstractExternalModule
 		return $__eval($str);
 	}
 
-	function loadDataReportTwig($project_id, $report_index) {
+	public function loadDataReportTwig($project_id, $report_index) {
 		$reportList = $this->getAllReportNames($project_id);
-		$reportData = $this->buildReportTable($project_id,$report_index);
+		$reportData = $this->buildReportTable($project_id, $report_index);
 
 		return $this->getTwig()->render('data_report.html.twig', [
 			'report_list' => $reportList,
@@ -253,16 +260,15 @@ class ReportsWithRecordSums extends AbstractExternalModule
 		]);
 	}
 
-	function loadTwigExtensions(): void
-	{
+	public function loadTwigExtensions(): void {
 		$this->initializeTwig();
 		$this->getTwig()->addFunction(new TwigFunction('dataReport', function ($report_index, $project_id) {
-			$urlStr = $this->getUrl('data_report.php') . '?report_index=' . $report_index."&pid=".$project_id;
+			$urlStr = $this->getUrl('data_report.php') . '?report_index=' . $report_index . "&pid=" . $project_id;
 			return $urlStr;
 		}));
 
 		$this->getTwig()->addFunction(new TwigFunction('loadJSBS', function () {
-			return $this->framework->loadBootstrap().$this->framework->loadREDCapJS();
+			return $this->framework->loadBootstrap() . $this->framework->loadREDCapJS();
 		}));
 	}
 }
