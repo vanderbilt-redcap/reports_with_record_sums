@@ -26,7 +26,7 @@ These settings can be repeated together to define multiple reports.
 
 ## Preview
 
-Expected appearance of the "Data Reports Page" for the included [example project xml](examples/report_with_record_sums_example.xml):
+Expected appearance of the "Data Reports Page" for the included [example project xml](examples/ReportSumProject.REDCap.xml):
 
 ![Example report page](images/report_example.png)
 
