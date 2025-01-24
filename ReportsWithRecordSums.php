@@ -146,10 +146,6 @@ class ReportsWithRecordSums extends AbstractExternalModule
 		list($columns, $errors) = $this->replaceColumnReferences($columns);
 
 		$columns = $this->replaceSpecialTags($recordData, $columns);
-		/*$columns = array_map(function ($column) use ($recordData) {
-			$record_id = array_key_first($recordData);
-			\Piping::replaceVariablesInLabel($column,$record_id,null,1,$recordData);
-		},$columns);*/
 
 		array_walk($columns, function (&$val, $key) use ($record_id, $recordData) {
 			$val = \Piping::replaceVariablesInLabel($val, $record_id, null, 1, [$record_id => $recordData], true, null, false);
