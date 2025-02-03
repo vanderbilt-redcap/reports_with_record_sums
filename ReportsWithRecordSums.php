@@ -263,6 +263,7 @@ class ReportsWithRecordSums extends AbstractExternalModule
 			return $urlStr;
 		}));
 
+		// NOTE: This function is not necessary on any page that includes the REDCap header file either by manual inclusion or through settings on config.json.
 		$this->getTwig()->addFunction(new TwigFunction('loadJSBS', function () {
 			return $this->framework->loadBootstrap() . $this->framework->loadREDCapJS();
 		}));
